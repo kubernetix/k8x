@@ -1,11 +1,5 @@
-// See if one can patch typescript
-// https://github.com/microsoft/TypeScript/blob/0e292c441a0e5f27e18803128b7dfb1155ac0f5a/src/compiler/transformers/jsx.ts#L218
-// https://github.com/sdegutis/imlib/issues/5
-// https://github.com/microsoft/TypeScript/issues/21699
+/// <reference no-default-lib="true"/>
 
-// Need to do that to shut up the compiler
-// jsx transforms <div> to React.createElement per default
-// That means we need to declare the JSX namespace but ALSO a global variable that just returns stuff
 declare var React: any;
 
 declare namespace k8x {

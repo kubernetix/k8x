@@ -45,11 +45,16 @@ k8x rm
 ## Example chart
 
 ```tsx
+import Wordpress from "@charts/wordpress"
+
 const replicas = Number(process.env["VARIABLE"]);
 
 export default () => (
   <cluster config="~/.kube/config">
     <namespace name="default">
+      
+      <Wordpress></Wordpress>
+
       <deployment>
         <spec replicas={replicas}>
           <selector>
@@ -82,6 +87,8 @@ export default () => (
       </service>
     </namespace>
   </cluster>
+);
+
 );
 ```
 
