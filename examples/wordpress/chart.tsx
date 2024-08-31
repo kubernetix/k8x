@@ -1,10 +1,11 @@
+const replicas = Number(process.env["VARIABLE"]);
+
 export default () => (
   <chart appVersion="0.0.1" name="Wordpress" version="1.0.0">
-    <k8s config-path="~/.kube/config">
+    <cluster config="~/.kube/config">
       <namespace name="default">
-
         <deployment>
-          <spec replicas={Number(process.env["VARIABLE"])}>
+          <spec replicas={replicas}>
             <selector>
               <match-label key="appp">snowflake</match-label>
               <match-expression
@@ -37,8 +38,7 @@ export default () => (
             <port protocol="TCP" port={80} targetPort={80} />
           </spec>
         </service>
-
       </namespace>
-    </k8s>
+    </cluster>
   </chart>
 );

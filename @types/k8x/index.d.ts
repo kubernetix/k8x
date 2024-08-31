@@ -3,11 +3,10 @@
 // https://github.com/sdegutis/imlib/issues/5
 // https://github.com/microsoft/TypeScript/issues/21699
 
-
 // Need to do that to shut up the compiler
 // jsx transforms <div> to React.createElement per default
 // That means we need to declare the JSX namespace but ALSO a global variable that just returns stuff
-declare var React: any
+declare var React: any;
 
 declare namespace JSX {
   interface IntrinsicElements {
@@ -40,12 +39,19 @@ declare namespace JSX {
       annotations?: string[];
       //children: IntrinsicElements["k8s"];
     };
-    k8s: {
-      "config-path"?: string;
+    /**
+     * @description Use the <cluster> tag to deploy to one or more namespaces at the same time
+     * @optional
+     */
+    cluster: {
+      config?: string;
       //children?: IntrinsicElements["namespace"];
     };
+    /*
+     * OPTIONAL: Use the <namespace> tag to deploy to one or more namespaces at the same time
+     */
     namespace: {
-      name?: string
+      name?: string;
       //children?: (
       //  | JSX.IntrinsicElements["metadata"]
       //  | JSX.IntrinsicElements["metadata"]
@@ -68,8 +74,8 @@ declare namespace JSX {
     };
     selector: {};
     spec: {
-      replicas?: number
-    } 
+      replicas?: number;
+    };
     template: {};
     container: {
       image: string;
@@ -87,14 +93,10 @@ declare namespace JSX {
       apiVersion?: "v1";
     };
     port: {
-      name?: string
+      name?: string;
       protocol: "TCP" | "UDP";
       port: number;
       targetPort: number;
     };
   }
 }
-
-
-
-

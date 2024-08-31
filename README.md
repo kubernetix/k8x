@@ -7,7 +7,7 @@ My experience with real world k8s apps is limited. I work professionally as a de
 ## Features:
 
 - .env integration
-    - K8X_MY_VARIABLE
+  - K8X_MY_VARIABLE
 - Automatic namespace handling
 - Chart sharing via npm
 - Better templating
@@ -41,18 +41,17 @@ k8x rm
 
 ## Non Goals
 
-
-
 ## Example chart
 
 ```tsx
+const replicas = Number(process.env["VARIABLE"]);
+
 export default () => (
   <chart appVersion="0.0.1" name="Wordpress" version="1.0.0">
-    <k8s config-path="~/.kube/config">
+    <cluster config="~/.kube/config">
       <namespace name="default">
-
         <deployment>
-          <spec replicas={Number(process.env["VARIABLE"])}>
+          <spec replicas={replicas}>
             <selector>
               <match-label key="appp">snowflake</match-label>
               <match-expression
@@ -85,13 +84,11 @@ export default () => (
             <port protocol="TCP" port={80} targetPort={80} />
           </spec>
         </service>
-
       </namespace>
-    </k8s>
+    </cluster>
   </chart>
 );
 ```
-
 
 ## Terminology
 
@@ -99,10 +96,8 @@ export default () => (
 
 Is a kubernetes entity, for example ingress, pod, service
 
-
-
 ## FAQ
 
 ### Why JSX/TSX
-JSX and TSX already are very mature tooling built directly into the tsc toolchain. IDE support is superior compared to simple yaml or other templating engines. Node has a very mature package and easy accessible code/chart sharing mechanism.
 
+JSX and TSX already are very mature tooling built directly into the tsc toolchain. IDE support is superior compared to simple yaml or other templating engines. Node has a very mature package and easy accessible code/chart sharing mechanism.
