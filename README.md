@@ -10,12 +10,12 @@ My experience with real world k8s apps is limited. I work professionally as a de
   - K8X_MY_VARIABLE
 - Automatic namespace handling
 - Chart sharing via npm
-    - `npm install -D @charts/wordpress`
-    - `import Wordpress from "@charts/wordpress"`
+  - `npm install -D @charts/wordpress`
+  - `import Wordpress from "@charts/wordpress"`
 - Better templating
 - Statically typed
 - IDE support
-    ![Proper intellisense support](assets/images/proper_intellisense_support.png "Proper intellisense support")
+  ![Proper intellisense support](assets/images/proper_intellisense_support.png "Proper intellisense support")
 - Multi cluster definition
 - Single installation definition
   - Sometimes a chart is not used to install multiple instances of an app, you just want to install it once in your cluster?
@@ -24,7 +24,7 @@ My experience with real world k8s apps is limited. I work professionally as a de
 - Versioning
 - Packaging
 - Chart/Component Hooks
-    - `<Wordpress beforeInstall={slackMessage} afterInstall={slackMessage} onError={handleError} />`
+  - `<Wordpress beforeInstall={slackMessage} afterInstall={slackMessage} onError={handleError} />`
 
 ## Usage
 
@@ -58,7 +58,7 @@ const replicas = Number(process.env["VARIABLE"]);
 export default () => (
   <cluster config="~/.kube/config">
     <namespace name="default">
-      
+
       <Wordpress></Wordpress>
 
       <deployment>
@@ -94,8 +94,6 @@ export default () => (
     </namespace>
   </cluster>
 );
-
-);
 ```
 
 ## Terminology
@@ -113,3 +111,17 @@ A tsx directive for example <cluster> or <namespace>
 ### Why JSX/TSX
 
 JSX and TSX already are very mature tooling built directly into the tsc toolchain. IDE support is superior compared to simple yaml or other templating engines. Node has a very mature package and easy accessible code/chart sharing mechanism.
+
+## Helm differentiation
+
+In general k8x is pretty similar to helm. It also took a lot of inspiration from it. But where helm is reinventing the wheel, k8x just falls back to already used mechanisms and infrastructure. (npm/typescript/configuration)
+
+| Topic | helm | k8x |
+| -------- | ------- | ------- | 
+| Packaging | reinvented | npm |
+| Templating | reinvented | tsx |
+| Configuration | reinvented | .env |
+| Scripting | reinvented | tsx |
+| Code sharing | reinvented | tsx |
+
+By reinvented I mean either a custom implementation, or a existing template language with limited or changed features.
