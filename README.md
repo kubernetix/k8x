@@ -10,6 +10,8 @@ My experience with real world k8s apps is limited. I work professionally as a de
   - K8X_MY_VARIABLE
 - Automatic namespace handling
 - Chart sharing via npm
+    - `npm install -D @charts/wordpress`
+    - `import Wordpress from "@charts/wordpress"`
 - Better templating
 - Statically typed
 - IDE support
