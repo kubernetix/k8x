@@ -94,7 +94,11 @@ export default () => (
 
 ### Component
 
-Is a kubernetes entity, for example ingress, pod, service
+A piece of tsx code, that is typically a kubernetes entity, for example ingress, pod, service
+
+### Tag
+
+A tsx directive for example <cluster> or <namespace>
 
 ## FAQ
 
