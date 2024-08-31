@@ -13,6 +13,7 @@ My experience with real world k8s apps is limited. I work professionally as a de
 - Better templating
 - Statically typed
 - IDE support
+    ![Proper intellisense support](assets/images/proper_intellisense_support.png "Proper intellisense support")
 - Single File definition
 - Multi cluster definition
 - Reusable components
