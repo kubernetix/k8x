@@ -3,7 +3,6 @@
 declare var React: any;
 
 declare namespace k8x {
-
   type Chart = {
     /**
      * This is the name of the chart
@@ -60,11 +59,11 @@ declare namespace k8x {
     operator: "In" | "Out";
     values: string[];
   };
-  type Selector = {}
+  type Selector = {};
   type Spec = {
     replicas?: number;
   };
-  type Template = {}
+  type Template = {};
   type Container = {
     image: string;
     imagePullPolicy: "Always" | "Never";
@@ -75,7 +74,7 @@ declare namespace k8x {
     //children?: JSX.IntrinsicElements["annotation"][];
   };
   type Annotation = { [key: string]: string };
-  type Label = Annotation
+  type Label = Annotation;
   type Service = {
     kind?: "Service";
     apiVersion?: "v1";
@@ -86,43 +85,54 @@ declare namespace k8x {
     port: number;
     targetPort: number;
   };
-
 }
 
 declare namespace JSX {
   interface IntrinsicElements {
     /**
      * Root tag for a k8s application chart
-     * 
+     *
      * @deprecated Use package.json instead
-     * 
+     *
      * @example
      * export default () => (
      *   <chart name="wordpress" version="1.0.0" appVersion="6.6.1"></chart>
      * )
      */
-    chart: k8x.Chart
+    chart: k8x.Chart;
     /**
      * @description Use the <cluster> tag to deploy to one or more namespaces at the same time
      * @optional
+     *
+     * @example
+     * export default () => (
+     *   <>
+     *      <cluster config="~/.kube/dev-config">
+     *        <Wordpress />
+     *      </cluster>
+     *      <cluster config="~/.kube/staging-config">
+     *        <Wordpress />
+     *      </cluster>
+     *   </>
+     * )
      */
-    cluster: k8x.Cluster
+    cluster: k8x.Cluster;
     /*
      * OPTIONAL: Use the <namespace> tag to deploy to one or more namespaces at the same time
      */
-    namespace: k8x.Namespace
-    ingress: k8x.Ingress
-    deployment: k8x.Deployment
-    "match-label"?: k8x.MatchLabel
-    "match-expression"?: k8x.MatchExpression
-    selector: k8x.Selector
-    spec: k8x.Spec
-    template: k8x.Template
-    container: k8x.Container
-    metadata: k8x.Metadata
-    annotation: k8x.Annotation
-    label: k8x.Label
-    service: k8x.Service
-    port: k8x.Port
+    namespace: k8x.Namespace;
+    ingress: k8x.Ingress;
+    deployment: k8x.Deployment;
+    "match-label"?: k8x.MatchLabel;
+    "match-expression"?: k8x.MatchExpression;
+    selector: k8x.Selector;
+    spec: k8x.Spec;
+    template: k8x.Template;
+    container: k8x.Container;
+    metadata: k8x.Metadata;
+    annotation: k8x.Annotation;
+    label: k8x.Label;
+    service: k8x.Service;
+    port: k8x.Port;
   }
 }
