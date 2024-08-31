@@ -17,6 +17,9 @@ My experience with real world k8s apps is limited. I work professionally as a de
 - IDE support
     ![Proper intellisense support](assets/images/proper_intellisense_support.png "Proper intellisense support")
 - Multi cluster definition
+- Single installation definition
+  - Sometimes a chart is not used to install multiple instances of an app, you just want to install it once in your cluster?
+  - Specify `chart.installation` on `package.json` and run `k8x install` without any name
 - Reusable components
 - Versioning
 - Packaging
