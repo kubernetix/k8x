@@ -1,5 +1,3 @@
-/// <reference no-default-lib="true"/>
-
 declare var React: any;
 
 declare namespace k8x {
