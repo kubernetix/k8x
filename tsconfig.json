@@ -2,8 +2,8 @@
     "compilerOptions": {
       "module": "ESNext",
       "noImplicitAny": false,
-      "target": "es2019",
-      "lib": ["es2020"],
+      "target": "ESNext",
+      "lib": ["ESNext"],
       "moduleResolution": "node",
       "removeComments": false,
       "sourceMap": true,

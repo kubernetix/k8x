@@ -1,4 +1,14 @@
 import * as k8s from '@kubernetes/client-node';
+import * as esbuild from 'esbuild'
+import fs from "node:fs/promises"
+
+import { jsx } from './jsx/jsx-factory';
+
+// https://github.com/oclif/oclif
+
+// Todo start by implementing k8x chart.tsx => json
+
+// Idea, replace nodejs with go and use k8s-go, esbuild-go and transpile the esbuild result to gocode via https://github.com/owenthereal/godzilla
 
 // Transpile step
   // transpile
@@ -20,22 +30,45 @@ import * as k8s from '@kubernetes/client-node';
   // Create deployments
 
 async function main() {
+
+  // use esbuild.transform instead
+
+  const chart = await fs.readFile("examples/wordpress/chart.tsx")
+
+  const code = await esbuild.transform(chart, {
+    loader: 'tsx',
+    jsxFactory: "jsx",
+    jsxFragment: "jsxFragment",
+    jsxImportSource: "k8x",
+    platform: "node",
+    target: "node18"
+  })
+
+  const src = code.code.replace("export default () =>", "export default (jsx) =>")
+  let func = await import(`data:text/javascript, ${src}`);
+
+  const struct = await func.default(jsx)
+
   const kc = new k8s.KubeConfig();
   kc.loadFromDefault();
+
+  const ns = struct.children[0].props.name
 
   const k8sApi = kc.makeApiClient(k8s.CoreV1Api);
 
   const namespace = {
     metadata: {
-      name: "test",
+      name: ns,
     },
   };
 
   try {
     const createNamespaceRes = await k8sApi.createNamespace(namespace);
-  } catch (err) { }
-
-  console.log("Hello World");
+    const readNamespaceRes = await k8sApi.readNamespace(ns);
+  } catch (err) {
+    console.error(err)
+  }
+  
 }
 
 main()

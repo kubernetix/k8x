@@ -2,21 +2,24 @@
   "name": "@types/k8x",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/nhh/k8x.git"
   },
   "files": [
-    "k8x.d.ts",
+    "dist/",
     "README.md"
   ],
-  "types": "k8x.d.ts",
   "scripts": {
-    "build": "tsc"
+    "bundle": "esbuild src/k8x.ts --bundle --platform=node --target=node22.4 --external:esbuild --outfile=dist/k8x.js",
+    "build": "tsc",
+    "run": "node dist/k8x.js"
+  },
+  "dependencies": {
+    "@kubernetes/client-node": "^0.21.0",
+    "esbuild": "0.23.1"
   },
   "devDependencies": {
-    "@kubernetes/client-node": "^0.21.0",
     "@types/node": "^22.4.1",
     "typescript": "^5.5.3"
   }
