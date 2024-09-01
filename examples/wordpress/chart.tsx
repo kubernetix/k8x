@@ -1,8 +1,9 @@
 const replicas = Number(process.env["VARIABLE"]);
+const ns = process.env["NAMESPACE"]
 
 export default () => (
   <cluster config="~/.kube/config">
-    <namespace name="default">
+    <namespace name={ns}>
       <deployment>
         <spec replicas={replicas}>
           <selector>
