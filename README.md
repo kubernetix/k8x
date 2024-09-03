@@ -1,8 +1,41 @@
-# k8x
+# Kubernetix (K8x)
+Type safe, reusable kubernetes components
 
-## Acknowledgements
+## Example chart
 
-My experience with real world k8s apps is limited. I work professionally as a developer, so my perspective is biased. I draw a lot of impressions from coding and managing simple applications with docker and docker compose. I am using helm and k8s at work and some of my frustrations might come from inexperience or seem perfectly fine for experienced k8s admins or ops people.
+```tsx
+import Wordpress from "@charts/wordpress"
+
+const replicas = Number(process.env["VARIABLE"]);
+
+export default () => (
+  <cluster config="~/.kube/config">
+    <namespace name="default">
+
+      <Wordpress containerName="wordpress"></Wordpress>
+
+      <deployment>
+        <spec replicas={replicas}>
+          <selector>
+            <match-label key="app">wordpress</match-label>
+          </selector>
+        </spec>
+
+        <template>
+          <spec>
+            <container
+              image="registry.k8s.io/serve_hostname"
+              imagePullPolicy="Always"
+              name="wordpress"
+            ></container>
+          </spec>
+        </template>
+      </deployment>
+
+    </namespace>
+  </cluster>
+);
+```
 
 ## Features:
 
@@ -48,53 +81,9 @@ k8x rm
 
 ## Non Goals
 
-## Example chart
+## Acknowledgements
 
-```tsx
-import Wordpress from "@charts/wordpress"
-
-const replicas = Number(process.env["VARIABLE"]);
-
-export default () => (
-  <cluster config="~/.kube/config">
-    <namespace name="default">
-
-      <Wordpress></Wordpress>
-
-      <deployment>
-        <spec replicas={replicas}>
-          <selector>
-            <match-label key="appp">snowflake</match-label>
-            <match-expression key="component" operator="In" values={["cache"]}>
-              redis
-            </match-expression>
-          </selector>
-        </spec>
-
-        <template>
-          <spec>
-            <container
-              image="registry.k8s.io/serve_hostname"
-              imagePullPolicy="Always"
-              name="snowflake"
-            ></container>
-          </spec>
-        </template>
-      </deployment>
-
-      <service>
-        <spec>
-          <selector>
-            <match-label key="app.kubernetes.io/name">MyApp</match-label>
-          </selector>
-
-          <port protocol="TCP" port={80} targetPort={80} />
-        </spec>
-      </service>
-    </namespace>
-  </cluster>
-);
-```
+My experience with real world k8s apps is limited. I work professionally as a developer, so my perspective is biased. I draw a lot of impressions from coding and managing simple applications with docker and docker compose. I am using helm and k8s at work and some of my frustrations might come from inexperience or seem perfectly fine for experienced k8s admins or ops people.
 
 ## Terminology
 
