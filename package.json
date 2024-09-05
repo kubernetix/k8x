@@ -1,12 +1,20 @@
 {
-  "name": "@types/k8x",
+  "name": "@kubernetix/k8x",
   "private": true,
   "version": "0.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nhh/k8x.git"
+    "url": "https://github.com/kubernetix/k8x.git"
+  },
+  "types": "./@types/index.d.ts",
+  "bin": {
+    "k8x": "bin/k8x"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "files": [
+    "bin/k8x",
     "dist/",
     "README.md"
   ],
@@ -20,7 +28,6 @@
     "esbuild": "0.23.1"
   },
   "devDependencies": {
-    "@types/node": "^22.4.1",
     "typescript": "^5.5.3"
   }
 }

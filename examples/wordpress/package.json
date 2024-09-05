@@ -1,9 +1,0 @@
-{
-  "name": "hsx",
-  "private": true,
-  "version": "0.0.0",
-  "devDependencies": {
-    "@types/node": "^22.4.1",
-    "@types/k8x": "file:../../@types/k8x"
-  }
-}
