@@ -52,6 +52,8 @@ export default () => (
   - `npm publish wordpress.tgz`
 - JSX templating
 - Type checking
+- Single binary
+- Safe sandboxing
 - Tests
 - IDE support
   ![Proper intellisense support](assets/images/proper_intellisense_support.png "Proper intellisense support")
