@@ -76,6 +76,13 @@ k8x ls
 k8x rm
 ```
 
+## Build
+
+Compile go to standalone executable
+```
+bin/build
+```
+
 ## Goals
 Reuse existing infrastructure and code features for enhanced developer experience
 
