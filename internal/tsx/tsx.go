@@ -125,7 +125,7 @@ func Run(code string) string {
 		panic("Cant cast result to Object")
 	}
 
-	yml, err := json.Marshal(num)
+	yml, err := json.MarshalIndent(num, "", "   ")
 
 	if err != nil {
 		panic(err)

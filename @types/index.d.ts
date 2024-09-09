@@ -1,6 +1,5 @@
 declare var React: any;
 
-
 /**
  * A cheat sheet noop jsx component that can be used for better documentation
  * 
@@ -13,9 +12,7 @@ declare var React: any;
  *  <Cluster />, <Namespace />, <Ingress /> 
  * ```
  */
-declare class Kubernetix {
-  props?: {}
-}
+type Kubernetix = (props?: {}) => void
 
 interface InstallHooks {
   beforeInstallation?: () => void
@@ -23,13 +20,11 @@ interface InstallHooks {
   onInstallationError?: () => void
 }
 
-interface InstallHooks {}
-
-declare class Ingress {
-  props?: {
-    foo?: string;
-  } & InstallHooks;
-}
+type Ingress = (
+    props?: {
+        foo?: string;
+    } & InstallHooks
+) => void
 
 declare class Namespace {
   props?: {

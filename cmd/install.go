@@ -15,7 +15,6 @@ var install = &cobra.Command{
 	Use:   "install",
 	Short: "Install a chart.tsx file into your k8s cluster",
 	Run: func(cmd *cobra.Command, args []string) {
-
 		if len(args) == 0 {
 			cmd.Help()
 			os.Exit(-1)
