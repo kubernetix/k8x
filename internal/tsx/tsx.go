@@ -1,4 +1,4 @@
-package main
+package tsx
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"github.com/dop251/goja"
 	"github.com/evanw/esbuild/pkg/api"
 	"os"
-	"runtime"
 	"strings"
 )
 
@@ -16,18 +15,10 @@ type Object struct {
 	Children []interface{}
 }
 
-func main() {
+// Loads and transpiles tsx files
+func Load(path string) string {
 
-	if len(os.Args) == 1 {
-		fmt.Println("ERROR: Cant find chart. Usage: k8x chart.tsx")
-		os.Exit(-1)
-	}
-
-	runtime.LockOSThread()
-
-	path := os.Args[1]
-
-	result := api.Build(api.BuildOptions{
+	options := api.BuildOptions{
 		Loader: map[string]api.Loader{
 			".tsx": api.LoaderTSX,
 		},
@@ -39,7 +30,9 @@ func main() {
 		JSXFactory:  "__jsx",
 		GlobalName:  "k8x",
 		Format:      api.FormatIIFE,
-	})
+	}
+
+	result := api.Build(options)
 
 	for _, message := range result.Errors {
 		fmt.Println(message)
@@ -53,13 +46,11 @@ func main() {
 		panic("")
 	}
 
-	code := string(result.OutputFiles[0].Contents)
-
-	gojajs(code)
-	// quick(code)
+	return string(result.OutputFiles[0].Contents)
 }
 
-func gojajs(code string) {
+// Executes tsx and returns its result
+func Run(code string) string {
 	vm := goja.New()
 
 	fc := func(id string, props map[string]interface{}, children ...interface{}) Object {
@@ -140,5 +131,5 @@ func gojajs(code string) {
 		panic(err)
 	}
 
-	fmt.Println(string(yml))
+	return string(yml)
 }
