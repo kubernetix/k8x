@@ -16,13 +16,14 @@ type Object struct {
 }
 
 // Loads and transpiles tsx files
-func Load(path string) string {
+func Load(path string, debug bool) string {
 
 	options := api.BuildOptions{
 		Loader: map[string]api.Loader{
 			".tsx": api.LoaderTSX,
 		},
 		EntryPoints: []string{path},
+		External:    []string{"@kubernetix/types"},
 		JSX:         api.JSXTransform,
 		Bundle:      true,
 		Write:       false,
@@ -44,6 +45,10 @@ func Load(path string) string {
 
 	if len(result.Errors) > 0 {
 		panic("")
+	}
+
+	if debug {
+		fmt.Println(string(result.OutputFiles[0].Contents))
 	}
 
 	return string(result.OutputFiles[0].Contents)

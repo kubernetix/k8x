@@ -7,7 +7,10 @@ import (
 	"os"
 )
 
+var Verbose bool
+
 func init() {
+	install.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "Enable debug output")
 	rootCmd.AddCommand(install)
 }
 
@@ -22,7 +25,7 @@ var install = &cobra.Command{
 
 		path := args[0]
 
-		code := tsx.Load(path)
+		code := tsx.Load(path, Verbose)
 		result := tsx.Run(code)
 
 		fmt.Println(result)
