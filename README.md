@@ -4,6 +4,8 @@ Deploy and manage reusable apps with typescript and jsx
 ## Example chart
 
 ```tsx
+/// <reference types="@kubernetix/types" />
+
 import Wordpress from "@charts/wordpress"
 
 const replicas = Number(process.env["VARIABLE"]);
