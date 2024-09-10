@@ -3,10 +3,13 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	spinner2 "github.com/kubernetix/k8x/v1/internal/spinner"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"os"
 	"path"
 	"text/template"
+	"time"
 )
 
 func init() {
@@ -66,28 +69,41 @@ var newCmd = &cobra.Command{
 		err := t.Execute(&pkgjson, map[string]interface{}{"packageName": chartPath})
 
 		if err != nil {
-			return
+			log.Error().Msg(err.Error())
+			os.Exit(-1)
 		}
 
 		err = os.Mkdir(chartPath, 0666)
 
 		if err != nil {
-			fmt.Printf("ERROR: Cannot create directory %s\n", chartPath)
-			return
+			log.Error().Msg(err.Error())
+			os.Exit(-1)
 		}
 
 		err = os.WriteFile(path.Join(chartPath, "package.json"), pkgjson.Bytes(), 0666)
 
 		if err != nil {
-			fmt.Println("ERROR: Cannot create package.json")
-			return
+			log.Error().Msg(err.Error())
+			os.Exit(-1)
 		}
 
 		err = os.WriteFile(path.Join(chartPath, "chart.tsx"), []byte(chartTsx), 0666)
 
 		if err != nil {
-			fmt.Println("ERROR: Cannot create chart.tsx")
-			return
+			log.Error().Err(err).Msg("")
+			os.Exit(-1)
 		}
+
+		spinner := spinner2.NewSpinner()
+
+		for i := 0; i < 50; i++ {
+			time.Sleep(100 * time.Millisecond)
+			fmt.Printf("\033[2K")
+			fmt.Println()
+			fmt.Printf("\033[1A")
+			fmt.Printf("%s Initializing chart....", spinner.String())
+		}
+		fmt.Println()
+		log.Info().Msg("Success!")
 	},
 }

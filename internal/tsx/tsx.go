@@ -2,9 +2,9 @@ package tsx
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/dop251/goja"
 	"github.com/evanw/esbuild/pkg/api"
+	"github.com/rs/zerolog/log"
 	"os"
 	"strings"
 )
@@ -36,19 +36,19 @@ func Load(path string, debug bool) string {
 	result := api.Build(options)
 
 	for _, message := range result.Errors {
-		fmt.Println(message)
+		log.Error().Msg(message.Text)
 	}
 
 	for _, message := range result.Warnings {
-		fmt.Println(message)
+		log.Warn().Msg(message.Text)
 	}
 
 	if len(result.Errors) > 0 {
-		panic("")
+		log.Error().Msg("Cannot transform js")
 	}
 
 	if debug {
-		fmt.Println(string(result.OutputFiles[0].Contents))
+		log.Debug().Msg(string(result.OutputFiles[0].Contents))
 	}
 
 	return string(result.OutputFiles[0].Contents)
@@ -70,13 +70,15 @@ func Run(code string) string {
 			sum, ok := goja.AssertFunction(obj)
 
 			if !ok {
-				panic("Not a function")
+				log.Error().Msg("Provided jsx callback is not a function")
+				os.Exit(-1)
 			}
 
 			val, err := sum(goja.Undefined(), vm.ToValue(props), vm.ToValue(children))
 
 			if err != nil {
-				panic(err)
+				log.Error().Err(err)
+				os.Exit(-1)
 			}
 
 			return val.Export().(Object)
@@ -87,7 +89,8 @@ func Run(code string) string {
 	err := vm.Set("__jsx", fc)
 
 	if err != nil {
-		panic(err)
+		log.Error().Err(err)
+		os.Exit(-1)
 	}
 
 	m := make(map[string]interface{})
@@ -104,36 +107,42 @@ func Run(code string) string {
 	err = vm.Set("$env", m)
 
 	if err != nil {
-		panic(err)
+		log.Error().Err(err)
+		os.Exit(-1)
 	}
 	_, err = vm.RunString(code)
 
 	if err != nil {
-		panic(err)
+		log.Error().Err(err)
+		os.Exit(-1)
 	}
 
 	sum, ok := goja.AssertFunction(vm.Get("k8x").ToObject(vm).Get("default"))
 
 	if !ok {
-		panic("Not a function")
+		log.Error().Err(err)
+		os.Exit(-1)
 	}
 
 	obj, err := sum(goja.Undefined())
 
 	if err != nil {
-		panic(err)
+		log.Error().Err(err)
+		os.Exit(-1)
 	}
 
 	num, ok := obj.Export().(Object)
 
 	if !ok {
-		panic("Cant cast result to Object")
+		log.Error().Msg("Cant cast to object")
+		os.Exit(-1)
 	}
 
 	yml, err := json.MarshalIndent(num, "", "   ")
 
 	if err != nil {
-		panic(err)
+		log.Error().Err(err).Msg("")
+		os.Exit(-1)
 	}
 
 	return string(yml)

@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/kubernetix/k8x/v1/internal/tsx"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -19,7 +19,7 @@ var install = &cobra.Command{
 	Short: "Install a chart.tsx file into your k8s cluster",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			cmd.Help()
+			_ = cmd.Help()
 			os.Exit(-1)
 		}
 
@@ -28,6 +28,6 @@ var install = &cobra.Command{
 		code := tsx.Load(path, Verbose)
 		result := tsx.Run(code)
 
-		fmt.Println(result)
+		log.Info().Msg(result)
 	},
 }
