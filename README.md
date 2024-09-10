@@ -8,34 +8,19 @@ Deploy and manage reusable apps with typescript and jsx
 
 import Wordpress from "@charts/wordpress"
 
-const replicas = Number(process.env["VARIABLE"]);
+const namespaces = ["dev", "staging", "qa", "production"]
 
 export default () => (
-  <cluster config="~/.kube/config">
-    <namespace name="default">
-
-      <Wordpress containerName="wordpress"></Wordpress>
-
-      <deployment>
-        <spec replicas={replicas}>
-          <selector>
-            <match-label key="app">wordpress</match-label>
-          </selector>
-        </spec>
-
-        <template>
-          <spec>
-            <container
-              image="registry.k8s.io/serve_hostname"
-              imagePullPolicy="Always"
-              name="wordpress"
-            ></container>
-          </spec>
-        </template>
-      </deployment>
-
-    </namespace>
-  </cluster>
+    <cluster config="~/.kube/config">
+        {
+            namespaces.map(namespace => (
+                    <namespace name={namespace}>
+                        <Wordpress name={`${namespace}-wordpress`} />
+                    </namespace>
+                )
+            )
+        }
+    </cluster>
 );
 ```
 
