@@ -1,7 +1,6 @@
 package tsx
 
 import (
-	"encoding/json"
 	"github.com/dop251/goja"
 	"github.com/evanw/esbuild/pkg/api"
 	"github.com/rs/zerolog/log"
@@ -55,7 +54,7 @@ func Load(path string, debug bool) string {
 }
 
 // Executes tsx and returns its result
-func Run(code string) string {
+func Run(code string) Object {
 	vm := goja.New()
 
 	fc := func(id string, props map[string]interface{}, children ...interface{}) Object {
@@ -138,12 +137,5 @@ func Run(code string) string {
 		os.Exit(-1)
 	}
 
-	yml, err := json.MarshalIndent(num, "", "   ")
-
-	if err != nil {
-		log.Error().Err(err).Msg("")
-		os.Exit(-1)
-	}
-
-	return string(yml)
+	return num
 }

@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"github.com/kubernetix/k8x/v1/internal/k8s"
 	"github.com/kubernetix/k8x/v1/internal/tsx"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -26,8 +26,8 @@ var install = &cobra.Command{
 		path := args[0]
 
 		code := tsx.Load(path, Verbose)
-		result := tsx.Run(code)
+		_ = tsx.Run(code)
 
-		log.Info().Msg(result)
+		k8s.CreateNamespae("default")
 	},
 }
