@@ -22,7 +22,6 @@ func Load(path string, debug bool) string {
 			".tsx": api.LoaderTSX,
 		},
 		EntryPoints: []string{path},
-		External:    []string{"@kubernetix/types"},
 		JSX:         api.JSXTransform,
 		Bundle:      true,
 		Write:       false,
@@ -53,10 +52,27 @@ func Load(path string, debug bool) string {
 	return string(result.OutputFiles[0].Contents)
 }
 
-// Executes tsx and returns its result
-func Run(code string) Object {
-	vm := goja.New()
+func injectEnv(vm *goja.Runtime) {
+	m := make(map[string]interface{})
 
+	for _, e := range os.Environ() {
+		pair := strings.Split(e, "=")
+		if strings.Index(pair[0], "K8X_") == -1 {
+			continue
+		}
+
+		m[pair[0]] = pair[1]
+	}
+
+	err := vm.Set("$env", m)
+
+	if err != nil {
+		log.Error().Msg("Cannot set $env variables")
+		os.Exit(-1)
+	}
+}
+
+func injectJsxFunctions(vm *goja.Runtime) {
 	fc := func(id string, props map[string]interface{}, children ...interface{}) Object {
 
 		if strings.Contains(id, "__jsx(") {
@@ -91,39 +107,32 @@ func Run(code string) Object {
 		log.Error().Err(err)
 		os.Exit(-1)
 	}
+}
 
-	m := make(map[string]interface{})
+// Executes tsx and returns its result
+func Run(code string) Object {
+	vm := goja.New()
 
-	for _, e := range os.Environ() {
-		pair := strings.Split(e, "=")
-		if strings.Index(pair[0], "K8X_") == -1 {
-			continue
-		}
+	injectJsxFunctions(vm)
+	injectEnv(vm)
 
-		m[pair[0]] = pair[1]
-	}
-
-	err = vm.Set("$env", m)
+	// Execute chart.tsx
+	_, err := vm.RunString(code)
 
 	if err != nil {
-		log.Error().Err(err)
-		os.Exit(-1)
-	}
-	_, err = vm.RunString(code)
-
-	if err != nil {
+		log.Error().Msg("Can't evaluate chart:")
 		log.Error().Err(err)
 		os.Exit(-1)
 	}
 
-	sum, ok := goja.AssertFunction(vm.Get("k8x").ToObject(vm).Get("default"))
+	k8x, ok := goja.AssertFunction(vm.Get("k8x").ToObject(vm).Get("default"))
 
 	if !ok {
 		log.Error().Err(err)
 		os.Exit(-1)
 	}
 
-	obj, err := sum(goja.Undefined())
+	obj, err := k8x(goja.Undefined())
 
 	if err != nil {
 		log.Error().Err(err)

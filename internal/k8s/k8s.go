@@ -3,7 +3,6 @@ package k8s
 import (
 	"context"
 	"flag"
-	"fmt"
 	"github.com/rs/zerolog/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -28,8 +27,6 @@ func CreateNamespae(name string) {
 		panic(err)
 	}
 
-	log.Info().Msg(config.Host)
-
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
@@ -45,6 +42,7 @@ func CreateNamespae(name string) {
 		log.Err(err).Msg("Cant get namespace")
 	}
 
-	fmt.Println(namespace.Name)
+	log.Info().Msgf("Deploying to: %s", namespace.Name)
+	log.Info().Msgf("ID: %s", namespace.UID)
 
 }
