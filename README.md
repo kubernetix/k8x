@@ -1,27 +1,208 @@
 # Kubernetix (K8x)
-Deploy and manage reusable apps with typescript and jsx
+Deploy and manage reusable apps with typescript and javascript
 
-## Example chart
+## Most basic chart definition
 
-```tsx
+This example shows the most basic, non configurable version of a chart. It closly follows the example yaml definition of
+a kubernetes deployment
+
+``touch chart.js``
+
+```js
+// https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#creating-a-deployment
+const deployment = {
+  apiVersion: 'apps/v1',
+  kind: 'Deployment',
+  metadata: { 
+    name: "hello-world-deployment",
+    labels: { app: "hello-world" }
+  },
+  spec: {
+    replicas: 1,
+    selector: {
+      matchLabels: { app: "hello-world" }
+    },
+    template: {
+      metadata: { labels: { app: "hello-world" } },
+      spec: {
+        containers: [
+          { name: 'nginx', image: "nginx:1.14.2", ports: [{ containerPort: 80 }] }
+        ]
+      }
+    }
+  }
+}
+
+export default () => ({
+  name: "hello-world",
+  namespace: "default",
+  components: [pod],
+});
+```
+
+Deploy it with:
+
+```
+k8x install chart.js
+```
+
+## Most basic chart definition with types
+
+You can use typescript with proper type definitions.
+
+``npm install -D @kubernetix/types && mv chart.js chart.ts``
+
+```diff ts
++/// <reference types="@kubernetix/types" />
+
+// https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#creating-a-deployment
+- const deployment = {
++ const deployment: k8x.Deployment = {
+  apiVersion: 'apps/v1',
+  kind: 'Deployment',
+  metadata: { 
+    name: "hello-world-deployment",
+    labels: { app: "hello-world" }
+  },
+  spec: {
+    replicas: 1,
+    selector: {
+      matchLabels: { app: "hello-world" }
+    },
+    template: {
+      metadata: { labels: { app: "hello-world" } },
+      spec: {
+        containers: [
+          { name: 'nginx', image: "nginx:1.14.2", ports: [{ containerPort: 80 }] }
+        ]
+      }
+    }
+  }
+}
+
+- export default () => ({
++ export default (): k8x.Chart => ({
+  name: "hello-world",
+  namespace: "default",
+  components: [pod],
+});
+```
+
+Deploy it with:
+
+```
+k8x install chart.ts
+```
+
+## Most basic chart definition with types and env integration
+
+Every environment variable prefixed with ``K8X_`` is availabe for the chart to use
+
+```diff ts
 /// <reference types="@kubernetix/types" />
 
-import Wordpress from "@charts/wordpress"
+// https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#creating-a-deployment
+const deployment: k8x.Deployment = {
+  apiVersion: 'apps/v1',
+  kind: 'Deployment',
+  metadata: { 
+    name: "hello-world-deployment",
+    labels: { app: "hello-world" }
+  },
+  spec: {
+    replicas: 1,
+    selector: {
+      matchLabels: { app: "hello-world" }
+    },
+    template: {
+      metadata: { labels: { app: "hello-world" } },
+      spec: {
+        containers: [
+          { name: 'nginx', image: "nginx:1.14.2", ports: [{ containerPort: 80 }] }
+        ]
+      }
+    }
+  }
+}
 
-const namespaces = ["dev", "staging", "qa", "production"]
+export default (): k8x.Chart => ({
+  name: "hello-world",
+-  namespace: "default",
++  namespace: k8x.$env["NAMESPACE"] ?? "default",
+  components: [pod],
+});
+```
 
-export default () => (
-    <cluster config="~/.kube/config">
-        {
-            namespaces.map(namespace => (
-                    <namespace name={namespace}>
-                        <Wordpress name={`${namespace}-wordpress`} />
-                    </namespace>
-                )
-            )
-        }
-    </cluster>
-);
+Deploy it with:
+
+```
+K8X_NAMESPACE=backend-staging k8x install chart.ts
+```
+
+## Most basic chart definition with types and env integration and imported ingress component
+
+You can use leverage js imports to reuse components or variables
+
+```diff ts
+/// <reference types="@kubernetix/types" />
+
++import ingress from "./components/ingress"
+
+// https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#creating-a-deployment
+const deployment: k8x.Deployment = {
+  apiVersion: 'apps/v1',
+  kind: 'Deployment',
+  metadata: { 
+    name: "hello-world-deployment",
+    labels: { app: "hello-world" }
+  },
+  spec: {
+    replicas: 1,
+    selector: {
+      matchLabels: { app: "hello-world" }
+    },
+    template: {
+      metadata: { labels: { app: "hello-world" } },
+      spec: {
+        containers: [
+          { name: 'nginx', image: "nginx:1.14.2", ports: [{ containerPort: 80 }] }
+        ]
+      }
+    }
+  }
+}
+
+export default (): k8x.Chart => ({
+  name: "hello-world",
+  namespace: k8x.$env["NAMESPACE"] ?? "default",
+-  components: [pod],
++  components: [pod, ingress],
+});
+```
+
+That's it, deploy your apps with typescript or javascript. Happy deploying!
+
+## Medium complicated chart definition
+
+```ts
+/// <reference types="@kubernetix/types" />
+
+import MyIngress, { MyIngressProps } from "./components/ingress"
+
+const values: MyIngressProps = {
+  name: k8x.$env["INGRESS_NAME"] ?? "my-ingress",
+  appRoot: k8x.$env["INGRESS_NAME"] ?? "/var/www/html",
+  additionalPaths:
+    Object.keys(k8x.$env)
+      .filter((key) => key.startsWith("INGRESS_PATH"))
+      .map((key) => k8x.$env[key]) ?? [],
+}
+
+export default (): k8x.Chart => ({
+  name: "default",
+  namespace: "default",
+  components: [MyIngress(values)],
+})
 ```
 
 ## Features:
@@ -29,7 +210,7 @@ export default () => (
 - .env integration
   - K8X_MY_VARIABLE
 - Automatic namespace handling
-  - Auto create namespaces
+  - Auto create/upgrade namespaces
 - Sharing
   - `npm install -D @charts/wordpress`
   - `import Wordpress from "@charts/wordpress"`
@@ -37,15 +218,13 @@ export default () => (
   - `npm version patch -m "Upgrade to 1.0.1 for reasons"`
   - `npm pack @charts/wordpress`
   - `npm publish wordpress.tgz`
-- JSX templating
-- Type checking
+- Typescript
 - Single binary
 - Safe sandboxing
-- Tests
-- IDE support
+- Proper IDE support
   ![Proper intellisense support](assets/images/proper_intellisense_support.png "Proper intellisense support")
 - Single installation definition
-  - Specify `chart.id` on `package.json` and run `k8x install` without name parameter
+  - Specify `chart.name` and run `k8x install` without name parameter
 - Reusable components
   - Props
 - Hooks
@@ -63,49 +242,35 @@ k8x ls
 k8x rm
 ```
 
-## Build
-
-Compile go to standalone executable
-```
-bin/build
-```
-
 ## Goals
 Reuse existing infrastructure and code features for enhanced developer experience
 
 ## Non Goals
-<Todo/>
+- Replace helm
+- 
 
 ## Helm differentiation
 
+I feel like helm was built by the ops side of devops people. k8x is built by the dev side of devops people.
+
 In general k8x is pretty similar to helm. It also took a lot of inspiration from it. But where helm is reinventing the wheel, k8x just falls back to already used mechanisms and infrastructure. (npm/typescript/configuration)
 
-| Topic | helm | k8x |
-| -------- | ------- | ------- | 
-| Packaging | custom | npm |
-| Templating | gotmpl | tsx |
-| Configuration | yaml | .env |
-| Scripting | custom | tsx |
-| Code sharing | custom | tsx |
+| Topic | helm     | k8x   |
+| -------- |----------|-------| 
+| Packaging | custom   | npm   |
+| Templating | gotmpl   | js/ts |
+| Configuration | --set servers.foo.port=80 | .env  |
+| Scripting | custom   | js/ts |
+| Code sharing | custom   | js/ts |
 
 By custom I mean either a custom implementation, or a existing template language with limited or changed features.
 
 ## Acknowledgements
 
-My experience with real world k8s apps is limited. I work professionally as a developer, so my perspective is biased. I draw a lot of impressions from coding and managing simple applications with docker and docker compose. I am using helm and k8s at work and some of my frustrations might come from inexperience or seem perfectly fine for experienced k8s admins or ops people.
+I am using helm at work and some of my frustrations might come from inexperience or seem perfectly fine for experienced k8s admins or ops people.
 
 ## Terminology
 
 ### Component
 
-A piece of tsx code, that is typically a kubernetes entity, for example ingress, pod, service
-
-### Tag
-
-A tsx directive for example <cluster> or <namespace>
-
-## FAQ
-
-### Why JSX/TSX
-
-JSX and TSX already are very mature tooling built directly into the tsc toolchain. IDE support is superior compared to simple yaml or other templating engines. Node has a very mature package and easy accessible code/chart sharing mechanism.
+A piece of reusable/configurable code, that is typically a kubernetes object, for example ingress, pod, service
