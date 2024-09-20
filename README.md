@@ -225,6 +225,9 @@ export default (): k8x.Chart => ({
   ![Proper intellisense support](assets/images/proper_intellisense_support.png "Proper intellisense support")
 - Single installation definition
   - Specify `chart.name` and run `k8x install` without name parameter
+- Interactive chart inspection
+  - Load and inspect a file interactively with k8x inspect. It will display all information rendered based on the
+  - input it has. 
 - Reusable components
   - Props
 - Hooks
@@ -234,10 +237,9 @@ export default (): k8x.Chart => ({
 ## Usage
 
 ```
-k8x install <name>
-k8x install my-wordpress
-k8x update my-wordpress
-k8x compile
+k8x install <file>
+k8x update <file>
+k8x inspect <file>
 k8x ls
 k8x rm
 ```
