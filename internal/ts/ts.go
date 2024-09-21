@@ -53,7 +53,7 @@ func injectEnv(vm *goja.Runtime) {
 			continue
 		}
 
-		m[pair[0]] = pair[1]
+		m[strings.Replace(pair[0], "K8X_", "", 1)] = pair[1]
 	}
 
 	obj := vm.NewObject()
@@ -100,6 +100,21 @@ func Run(code string) map[string]interface{} {
 
 	if !ok {
 		panic("Cant cast to object")
+	}
+
+	ns, ok := k8sExport["namespace"].(string)
+
+	// Patching namespaces
+	if ns != "" && ok {
+		for _, component := range k8sExport["components"].([]interface{}) {
+			if component == nil {
+				continue
+			}
+
+			comp := component.(map[string]interface{})
+			metadata := comp["metadata"].(map[string]interface{})
+			metadata["namespace"] = ns
+		}
 	}
 
 	return k8sExport
