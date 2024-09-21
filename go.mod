@@ -9,8 +9,6 @@ require (
 	github.com/evanw/esbuild v0.23.1
 	github.com/spf13/cobra v1.8.1
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/apimachinery v0.31.1
-	k8s.io/client-go v0.31.1
 )
 
 require (
