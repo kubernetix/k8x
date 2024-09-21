@@ -71,7 +71,7 @@ func injectEnv(vm *goja.Runtime) {
 }
 
 // Executes tsx and returns its result
-func Run(code string) any {
+func Run(code string) map[string]interface{} {
 	vm := goja.New()
 
 	injectEnv(vm)

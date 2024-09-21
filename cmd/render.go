@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/kubernetix/k8x/v1/internal/ts"
 	"github.com/spf13/cobra"
@@ -128,11 +128,9 @@ func max(a, b int) int {
 
 var (
 	Interactive bool
-	Json        bool
 )
 
 func init() {
-	render.PersistentFlags().BoolVarP(&Json, "json", "j", false, "Render json")
 	render.PersistentFlags().BoolVarP(&Interactive, "interactive", "i", false, "Interactively show rendered json/yaml")
 	rootCmd.AddCommand(render)
 }
@@ -151,17 +149,20 @@ var render = &cobra.Command{
 		code := ts.Load(path, Verbose)
 		export := ts.Run(code)
 
-		var content []byte
+		content := []string{""}
 
-		if Json {
-			content, _ = json.MarshalIndent(export, "", "  ")
-		} else {
-			content, _ = yaml.Marshal(export)
+		for _, component := range export["components"].([]interface{}) {
+			bts, _ := yaml.Marshal(component)
+			content = append(content, string(bts))
 		}
 
 		if Interactive {
+			md := fmt.Sprintf("```yml%s```", strings.Join(content, "---\n"))
+
+			out, _ := glamour.Render(md, "dark")
+
 			p := tea.NewProgram(
-				model{content: string(content)},
+				model{content: out},
 				tea.WithAltScreen(),       // use the full size of the terminal in its "alternate screen buffer"
 				tea.WithMouseCellMotion(), // turn on mouse support so we can track the mouse wheel
 			)
@@ -173,7 +174,7 @@ var render = &cobra.Command{
 
 			os.Exit(0)
 		} else {
-			fmt.Println(string(content))
+			fmt.Println(strings.Join(content, "---\n"))
 		}
 
 	},
