@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/dop251/goja"
 	"github.com/evanw/esbuild/pkg/api"
-	"gopkg.in/yaml.v3"
 	"os"
 	"strings"
 )
@@ -102,9 +101,6 @@ func Run(code string) any {
 	if !ok {
 		panic("Cant cast to object")
 	}
-
-	yml, _ := yaml.Marshal(k8sExport)
-	fmt.Println(string(yml))
 
 	return k8sExport
 }
