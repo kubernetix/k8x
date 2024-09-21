@@ -1,4 +1,4 @@
-package tsx
+package ts
 
 import (
 	"github.com/dop251/goja"
@@ -19,14 +19,12 @@ func Load(path string, debug bool) string {
 
 	options := api.BuildOptions{
 		Loader: map[string]api.Loader{
-			".tsx": api.LoaderTSX,
+			".ts": api.LoaderTS,
+			".js": api.LoaderJS,
 		},
 		EntryPoints: []string{path},
-		JSX:         api.JSXTransform,
 		Bundle:      true,
 		Write:       false,
-		JSXFragment: "__jsxFragment",
-		JSXFactory:  "__jsx",
 		GlobalName:  "k8x",
 		Format:      api.FormatIIFE,
 	}
@@ -72,48 +70,10 @@ func injectEnv(vm *goja.Runtime) {
 	}
 }
 
-func injectJsxFunctions(vm *goja.Runtime) {
-	fc := func(id string, props map[string]interface{}, children ...interface{}) Object {
-
-		if strings.Contains(id, "__jsx(") {
-			obj, err := vm.RunString(id)
-
-			if err != nil {
-				panic(err)
-			}
-
-			sum, ok := goja.AssertFunction(obj)
-
-			if !ok {
-				log.Error().Msg("Provided jsx callback is not a function")
-				os.Exit(-1)
-			}
-
-			val, err := sum(goja.Undefined(), vm.ToValue(props), vm.ToValue(children))
-
-			if err != nil {
-				log.Error().Err(err)
-				os.Exit(-1)
-			}
-
-			return val.Export().(Object)
-		}
-
-		return Object{id, props, children}
-	}
-	err := vm.Set("__jsx", fc)
-
-	if err != nil {
-		log.Error().Err(err)
-		os.Exit(-1)
-	}
-}
-
 // Executes tsx and returns its result
 func Run(code string) Object {
 	vm := goja.New()
 
-	injectJsxFunctions(vm)
 	injectEnv(vm)
 
 	// Execute chart.tsx
@@ -139,12 +99,12 @@ func Run(code string) Object {
 		os.Exit(-1)
 	}
 
-	num, ok := obj.Export().(Object)
+	k8sExport, ok := obj.Export().(Object)
 
 	if !ok {
 		log.Error().Msg("Cant cast to object")
 		os.Exit(-1)
 	}
 
-	return num
+	return k8sExport
 }
