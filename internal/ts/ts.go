@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/dop251/goja"
 	"github.com/evanw/esbuild/pkg/api"
-	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 	"os"
 	"strings"
@@ -28,19 +27,19 @@ func Load(path string, debug bool) string {
 	result := api.Build(options)
 
 	for _, message := range result.Errors {
-		log.Error().Msg(message.Text)
+		fmt.Println(message)
 	}
 
 	for _, message := range result.Warnings {
-		log.Warn().Msg(message.Text)
+		fmt.Println(message)
 	}
 
 	if len(result.Errors) > 0 {
-		log.Error().Msg("Cannot transform js")
+		fmt.Println("Cannot transform js")
 	}
 
 	if debug {
-		log.Debug().Msg(string(result.OutputFiles[0].Contents))
+		fmt.Print(string(result.OutputFiles[0].Contents))
 	}
 
 	return string(result.OutputFiles[0].Contents)
@@ -68,8 +67,7 @@ func injectEnv(vm *goja.Runtime) {
 	err = vm.Set("k8x", obj)
 
 	if err != nil {
-		log.Error().Msg("Cannot set $env variables")
-		os.Exit(-1)
+		panic(err)
 	}
 }
 
@@ -83,30 +81,26 @@ func Run(code string) any {
 	_, err := vm.RunString(code)
 
 	if err != nil {
-		log.Error().Msg("Can't evaluate chart:")
-		log.Error().Err(err)
+		fmt.Println("Can't evaluate chart:")
 		os.Exit(-1)
 	}
 
 	k8x, ok := goja.AssertFunction(vm.Get("k8x").ToObject(vm).Get("default"))
 
 	if !ok {
-		log.Error().Err(err)
-		os.Exit(-1)
+		panic("Please make sure you are exporting a function: export default () => ({})")
 	}
 
 	obj, err := k8x(goja.Undefined())
 
 	if err != nil {
-		log.Error().Err(err)
-		os.Exit(-1)
+		panic(err)
 	}
 
 	k8sExport, ok := obj.Export().(map[string]interface{})
 
 	if !ok {
-		log.Error().Msg("Cant cast to object")
-		os.Exit(-1)
+		panic("Cant cast to object")
 	}
 
 	yml, _ := yaml.Marshal(k8sExport)

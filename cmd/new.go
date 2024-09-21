@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	spinner2 "github.com/kubernetix/k8x/v1/internal/spinner"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"os"
 	"path"
@@ -69,29 +68,25 @@ var newCmd = &cobra.Command{
 		err := t.Execute(&pkgjson, map[string]interface{}{"packageName": chartPath})
 
 		if err != nil {
-			log.Error().Msg(err.Error())
-			os.Exit(-1)
+			panic(err)
 		}
 
 		err = os.Mkdir(chartPath, 0666)
 
 		if err != nil {
-			log.Error().Msg(err.Error())
-			os.Exit(-1)
+			panic(err)
 		}
 
 		err = os.WriteFile(path.Join(chartPath, "package.json"), pkgjson.Bytes(), 0666)
 
 		if err != nil {
-			log.Error().Msg(err.Error())
-			os.Exit(-1)
+			panic(err)
 		}
 
 		err = os.WriteFile(path.Join(chartPath, "chart.tsx"), []byte(chartTsx), 0666)
 
 		if err != nil {
-			log.Error().Err(err).Msg("")
-			os.Exit(-1)
+			panic(err)
 		}
 
 		spinner := spinner2.NewSpinner()
@@ -103,7 +98,6 @@ var newCmd = &cobra.Command{
 			fmt.Printf("\033[1A")
 			fmt.Printf("%s Initializing chart....", spinner.String())
 		}
-		fmt.Println()
-		log.Info().Msg("Success!")
+		fmt.Println("Success!")
 	},
 }
