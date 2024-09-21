@@ -1,18 +1,14 @@
 package ts
 
 import (
+	"fmt"
 	"github.com/dop251/goja"
 	"github.com/evanw/esbuild/pkg/api"
 	"github.com/rs/zerolog/log"
+	"gopkg.in/yaml.v3"
 	"os"
 	"strings"
 )
-
-type Object struct {
-	Id       string
-	Props    map[string]interface{}
-	Children []interface{}
-}
 
 // Loads and transpiles tsx files
 func Load(path string, debug bool) string {
@@ -62,7 +58,14 @@ func injectEnv(vm *goja.Runtime) {
 		m[pair[0]] = pair[1]
 	}
 
-	err := vm.Set("$env", m)
+	obj := vm.NewObject()
+
+	err := obj.Set("$env", m)
+	if err != nil {
+		return
+	}
+
+	err = vm.Set("k8x", obj)
 
 	if err != nil {
 		log.Error().Msg("Cannot set $env variables")
@@ -71,7 +74,7 @@ func injectEnv(vm *goja.Runtime) {
 }
 
 // Executes tsx and returns its result
-func Run(code string) Object {
+func Run(code string) any {
 	vm := goja.New()
 
 	injectEnv(vm)
@@ -99,12 +102,15 @@ func Run(code string) Object {
 		os.Exit(-1)
 	}
 
-	k8sExport, ok := obj.Export().(Object)
+	k8sExport, ok := obj.Export().(map[string]interface{})
 
 	if !ok {
 		log.Error().Msg("Cant cast to object")
 		os.Exit(-1)
 	}
+
+	yml, _ := yaml.Marshal(k8sExport)
+	fmt.Println(string(yml))
 
 	return k8sExport
 }
