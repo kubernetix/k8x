@@ -16,23 +16,70 @@ on:
 
 jobs:
 
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
         go-version: '1.23'
     - name: Build
-      run: go build -o k8x .
+      run: go build -o k8x-linux-x86_64 .
     - name: Upload Go test results
       uses: actions/upload-artifact@v4
       with:
-        path: ./k8x
+        retention-days: 7
+        name: k8x-linux-x86_64
+        path: ./k8x-linux-x86_64
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - name: Build
+        run: go build -o k8x-darwin-x86_64 .
+      - name: Upload Go test results
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 7
+          name: k8x-darwin-x86_64
+          path: ./k8x-darwin-x86_64
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - name: Build
+        run: go build -o k8x-windows-x86_64.exe .
+      - name: Upload Go test results
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 7
+          name: k8x-windows-x86_64.exe
+          path: ./k8x-windows-x86_64.exe
+
+  release:
+    needs:
+      - build-windows
+      - build-linux
+      - build-macos
+    runs-on: ubuntu-latest
+    steps:
+    # Downloads all artifacts:
+    - name: Download a single artifact
+      uses: actions/download-artifact@v4
+    - name: DEBUG
+      run: ls
     - name: Create github release
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: k8x
+        files: k8x-windows-x86_64.exe,k8x-linux-x86_64,k8x-darwin-x86_64
