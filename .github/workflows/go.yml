@@ -1,21 +1,14 @@
 # This workflow will build a golang project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
 
-name: Go
-
-permissions:
-  contents: write
+name: Build and release binaries
 
 on:
   push:
-    branches: [ "main" ]
     tags:
       - v*
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
-
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -32,7 +25,6 @@ jobs:
         retention-days: 7
         name: k8x-linux-x86_64
         path: ./k8x-linux-x86_64
-
   build-macos:
     runs-on: macos-latest
     steps:
@@ -65,8 +57,9 @@ jobs:
           retention-days: 7
           name: k8x-windows-x86_64.exe
           path: ./k8x-windows-x86_64.exe
-
   release:
+    permissions:
+      contents: write
     needs:
       - build-windows
       - build-linux
