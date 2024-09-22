@@ -239,6 +239,5 @@ var render = &cobra.Command{
 			output, _ = grepCmd.Output()
 			fmt.Println(string(output))
 		}
-
 	},
 }
