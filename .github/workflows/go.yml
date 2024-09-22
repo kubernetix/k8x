@@ -5,6 +5,7 @@ name: Build and release binaries
 
 on:
   push:
+    branches: [ "release" ]
     tags:
       - v*
 
