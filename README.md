@@ -267,10 +267,6 @@ In general k8x is pretty similar to helm. It also took a lot of inspiration from
 
 By custom I mean either a custom implementation, or a existing template language with limited or changed features.
 
-## Acknowledgements
-
-I am using helm at work and some of my frustrations might come from inexperience or seem perfectly fine for experienced k8s admins or ops people.
-
 ## Terminology
 
 ### Component
