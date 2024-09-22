@@ -249,7 +249,6 @@ Reuse existing infrastructure and code features for enhanced developer experienc
 
 ## Non Goals
 - Replace helm
-- 
 
 ## Helm differentiation
 
