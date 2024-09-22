@@ -76,7 +76,6 @@ func Run(code string) map[string]interface{} {
 
 	injectEnv(vm)
 
-	// Execute chart.tsx
 	_, err := vm.RunString(code)
 
 	if err != nil {
