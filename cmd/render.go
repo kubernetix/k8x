@@ -150,7 +150,7 @@ var render = &cobra.Command{
 		path := args[0]
 
 		code := ts.Load(path, Verbose)
-		export := ts.Run(code)
+		export := ts.Run(code, path)
 
 		content := []string{""}
 

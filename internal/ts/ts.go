@@ -1,10 +1,13 @@
 package ts
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/dop251/goja"
 	"github.com/evanw/esbuild/pkg/api"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -70,11 +73,35 @@ func injectEnv(vm *goja.Runtime) {
 	}
 }
 
+func injectChartInfo(vm *goja.Runtime, path string) {
+	dir, _ := filepath.Split(path)
+
+	packageJson := filepath.Join(dir, "./package.json")
+
+	if _, err := os.Stat(packageJson); errors.Is(err, os.ErrNotExist) {
+		fmt.Println("INFO: No package.json detected, ignoring chart information")
+		return
+	}
+
+	fileOutput, _ := os.ReadFile(packageJson)
+
+	var pjson any
+	_ = json.Unmarshal(fileOutput, &pjson)
+	obj := vm.Get("k8x")
+
+	err := obj.ToObject(vm).Set("$chart", pjson)
+	if err != nil {
+		return
+	}
+}
+
 // Executes tsx and returns its result
-func Run(code string) map[string]interface{} {
+func Run(code string, path string) map[string]interface{} {
 	vm := goja.New()
 
+	// Todo handle this better because one creates k8x the other expects it to exist
 	injectEnv(vm)
+	injectChartInfo(vm, path)
 
 	_, err := vm.RunString(code)
 

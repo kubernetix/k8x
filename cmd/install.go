@@ -25,6 +25,6 @@ var install = &cobra.Command{
 		path := args[0]
 
 		code := ts.Load(path, Verbose)
-		_ = ts.Run(code)
+		_ = ts.Run(code, path)
 	},
 }
