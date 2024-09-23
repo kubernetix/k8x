@@ -101,10 +101,11 @@ func Run(code string) map[string]interface{} {
 		panic("Cant cast to object")
 	}
 
-	ns, ok := k8sExport["namespace"].(string)
+	// Well thats actually wild
+	name, ok := k8sExport["namespace"].(map[string]interface{})["metadata"].(map[string]interface{})["name"]
 
 	// Patching namespaces
-	if ns != "" && ok {
+	if name != nil && ok {
 		for _, component := range k8sExport["components"].([]interface{}) {
 			if component == nil {
 				continue
@@ -112,7 +113,7 @@ func Run(code string) map[string]interface{} {
 
 			comp := component.(map[string]interface{})
 			metadata := comp["metadata"].(map[string]interface{})
-			metadata["namespace"] = ns
+			metadata["namespace"] = name
 		}
 	}
 

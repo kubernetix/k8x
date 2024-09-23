@@ -138,15 +138,6 @@ func init() {
 	rootCmd.AddCommand(render)
 }
 
-var namespaceTemplate = `
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: %s
-  labels:
-    name: %s
-`
-
 var render = &cobra.Command{
 	Use:   "render",
 	Short: "Render a chart file as yaml or json",
@@ -176,7 +167,8 @@ var render = &cobra.Command{
 		if Interactive {
 			// Append auto generated namespace, Todo handle if namespace is undefined/null/""
 			if hasValidNamespace(namespace) {
-				content = append(content, fmt.Sprintf(namespaceTemplate, namespace, namespace))
+				nsyml, _ := yaml.Marshal(namespace)
+				content = append(content, string(nsyml))
 			}
 
 			md := fmt.Sprintf("```yml%s```", strings.Join(content, "---\n"))
@@ -197,7 +189,7 @@ var render = &cobra.Command{
 			os.Exit(0)
 		} else {
 			// create and open a temporary file
-			f, err := os.CreateTemp("", "tmpfile-") // in Go version older than 1.17 you can use ioutil.TempFile
+			f, err := os.CreateTemp("", "k8x-tmpfile-") // in Go version older than 1.17 you can use ioutil.TempFile
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -207,7 +199,8 @@ var render = &cobra.Command{
 
 			if hasValidNamespace(namespace) {
 				// Writing the namespace template to the file, apply it, wait 5 seconds
-				if _, err := f.Write([]byte(fmt.Sprintf(namespaceTemplate, export["namespace"], export["namespace"]))); err != nil {
+				ns, err := yaml.Marshal(namespace)
+				if _, err := f.Write(ns); err != nil {
 					log.Fatal(err)
 				}
 
