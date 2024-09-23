@@ -8,6 +8,7 @@ import (
 	"github.com/evanw/esbuild/pkg/api"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -56,7 +57,15 @@ func injectEnv(vm *goja.Runtime) {
 			continue
 		}
 
-		m[strings.Replace(pair[0], "K8X_", "", 1)] = pair[1]
+		// Try to parse stuff as number, might break stuff
+		// Dont know if https://1231412.de gets converted to 1231412
+		// Allows ts to write k8x.$env["SCALE"] instead of having to parse it: Number(k8x.$env["SCALE"])
+		i, err := strconv.Atoi(pair[1])
+		if err != nil {
+			m[strings.Replace(pair[0], "K8X_", "", 1)] = pair[1]
+		} else {
+			m[strings.Replace(pair[0], "K8X_", "", 1)] = i
+		}
 	}
 
 	obj := vm.NewObject()
