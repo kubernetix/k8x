@@ -171,9 +171,13 @@ var render = &cobra.Command{
 			content = append(content, string(bts))
 		}
 
+		namespace := export["namespace"]
+
 		if Interactive {
 			// Append auto generated namespace, Todo handle if namespace is undefined/null/""
-			content = append(content, fmt.Sprintf(namespaceTemplate, export["namespace"], export["namespace"]))
+			if hasValidNamespace(namespace) {
+				content = append(content, fmt.Sprintf(namespaceTemplate, namespace, namespace))
+			}
 
 			md := fmt.Sprintf("```yml%s```", strings.Join(content, "---\n"))
 
@@ -201,30 +205,32 @@ var render = &cobra.Command{
 			defer f.Close()
 			defer os.Remove(f.Name())
 
-			// Writing the namespace template to the file, apply it, wait 5 seconds
-			if _, err := f.Write([]byte(fmt.Sprintf(namespaceTemplate, export["namespace"], export["namespace"]))); err != nil {
-				log.Fatal(err)
+			if hasValidNamespace(namespace) {
+				// Writing the namespace template to the file, apply it, wait 5 seconds
+				if _, err := f.Write([]byte(fmt.Sprintf(namespaceTemplate, export["namespace"], export["namespace"]))); err != nil {
+					log.Fatal(err)
+				}
+
+				//fileOutput, _ := os.ReadFile(f.Name())
+				//fmt.Println(string(fileOutput))
+
+				grepCmd := exec.Command("kubectl", "apply", "-f", f.Name())
+
+				output, _ := grepCmd.Output()
+				fmt.Print(string(output))
+
+				if strings.Contains(string(output), "created") {
+					time.Sleep(1 * time.Second)
+				}
+
+				// Reset file
+				err = f.Truncate(0)
+				if err != nil {
+					return
+				}
+
+				_, err = f.Seek(0, 0)
 			}
-
-			//fileOutput, _ := os.ReadFile(f.Name())
-			//fmt.Println(string(fileOutput))
-
-			grepCmd := exec.Command("kubectl", "apply", "-f", f.Name())
-
-			output, _ := grepCmd.Output()
-			fmt.Print(string(output))
-
-			if strings.Contains(string(output), "created") {
-				time.Sleep(1 * time.Second)
-			}
-
-			// Reset file
-			err = f.Truncate(0)
-			if err != nil {
-				return
-			}
-
-			_, err = f.Seek(0, 0)
 
 			// Write chart
 			if _, err := f.Write([]byte(strings.Join(content, "---\n"))); err != nil {
@@ -234,10 +240,22 @@ var render = &cobra.Command{
 			//fileOutput, _ = os.ReadFile(f.Name())
 			//fmt.Println(string(fileOutput))
 
-			grepCmd = exec.Command("kubectl", "apply", "-f", f.Name())
+			grepCmd := exec.Command("kubectl", "apply", "-f", f.Name())
 
-			output, _ = grepCmd.Output()
+			output, _ := grepCmd.Output()
 			fmt.Println(string(output))
 		}
 	},
+}
+
+func hasValidNamespace(namespace interface{}) bool {
+	if namespace == nil {
+		return false
+	}
+
+	if namespace == "" {
+		return false
+	}
+
+	return true
 }
