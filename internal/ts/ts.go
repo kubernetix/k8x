@@ -48,7 +48,43 @@ func Load(path string, debug bool) string {
 	return string(result.OutputFiles[0].Contents)
 }
 
-func injectEnv(vm *goja.Runtime) {
+// Can return number or string
+func __jsEnvGet(name string) interface{} {
+	for _, e := range os.Environ() {
+		pair := strings.Split(e, "=")
+
+		if strings.Index(pair[0], "K8X_") == -1 {
+			continue
+		}
+
+		if name != strings.Replace(pair[0], "K8X_", "", 1) {
+			continue
+		}
+
+		if "true" == pair[1] {
+			return true
+		}
+
+		if "false" == pair[1] {
+			return false
+		}
+
+		// Try to parse stuff as number, might break stuff
+		// Dont know if https://1231412.de gets converted to 1231412
+		// Allows ts to write k8x.$env["SCALE"] instead of having to parse it: Number(k8x.$env["SCALE"])
+		i, err := strconv.Atoi(pair[1])
+		if err != nil {
+			return pair[1]
+		} else {
+			return i
+		}
+	}
+
+	panic("No env variable found")
+}
+
+// Can return number or string
+func __jsEnvGetAsObject(name string) interface{} {
 	m := make(map[string]interface{})
 
 	for _, e := range os.Environ() {
@@ -57,29 +93,65 @@ func injectEnv(vm *goja.Runtime) {
 			continue
 		}
 
+		if !strings.HasPrefix(strings.Replace(pair[0], "K8X_", "", 1), name) {
+			continue
+		}
+
+		if !strings.Contains(pair[0], "KEY") {
+			continue
+		}
+
+		// K8X_INGRESS_CLASS_ANNOTATIONS_KEY_1=nginx.ingress.kubernetes.io/app-root
+		// K8X_INGRESS_CLASS_ANNOTATIONS_VALUE_1=/var/www/html
+
+		// K8X_INGRESS_CLASS_ANNOTATIONS_KEY_2=nginx.ingress.kubernetes.io/enable-cors
+		// K8X_INGRESS_CLASS_ANNOTATIONS_VALUE_2=true
+		key := os.Getenv(pair[0])
+		value := os.Getenv(strings.Replace(pair[0], "KEY", "VALUE", 1))
+
 		// Try to parse stuff as number, might break stuff
 		// Dont know if https://1231412.de gets converted to 1231412
 		// Allows ts to write k8x.$env["SCALE"] instead of having to parse it: Number(k8x.$env["SCALE"])
-		i, err := strconv.Atoi(pair[1])
+		i, err := strconv.Atoi(value)
 		if err != nil {
-			m[strings.Replace(pair[0], "K8X_", "", 1)] = pair[1]
+			if "true" == value {
+				m[key] = true
+				continue
+			}
+
+			if "false" == value {
+				m[key] = false
+				continue
+			}
+
+			m[key] = value
 		} else {
-			m[strings.Replace(pair[0], "K8X_", "", 1)] = i
+			m[key] = i
 		}
 	}
 
+	return m
+}
+
+func injectEnv(vm *goja.Runtime) {
 	obj := vm.NewObject()
 
-	err := obj.Set("$env", m)
+	err := obj.ToObject(vm).Set("get", __jsEnvGet)
 	if err != nil {
-		return
+		panic("Cannot inject $env.get")
 	}
 
-	err = vm.Set("k8x", obj)
+	err = obj.ToObject(vm).Set("getAsObject", __jsEnvGetAsObject)
+	if err != nil {
+		panic("Cannot inject $env.getAsObject")
+	}
+
+	err = vm.Set("$env", obj)
 
 	if err != nil {
-		panic(err)
+		panic("Cannot set $env obj to vm")
 	}
+
 }
 
 func injectChartInfo(vm *goja.Runtime, path string) {
@@ -96,11 +168,11 @@ func injectChartInfo(vm *goja.Runtime, path string) {
 
 	var pjson any
 	_ = json.Unmarshal(fileOutput, &pjson)
-	obj := vm.Get("k8x")
 
-	err := obj.ToObject(vm).Set("$chart", pjson)
+	err := vm.Set("$chart", pjson)
+
 	if err != nil {
-		return
+		panic("Cannot set $env obj to vm")
 	}
 }
 
@@ -115,8 +187,7 @@ func Run(code string, path string) map[string]interface{} {
 	_, err := vm.RunString(code)
 
 	if err != nil {
-		fmt.Println("Can't evaluate chart:")
-		os.Exit(-1)
+		panic(err)
 	}
 
 	k8x, ok := goja.AssertFunction(vm.Get("k8x").ToObject(vm).Get("default"))
