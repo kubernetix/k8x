@@ -72,9 +72,9 @@ func __jsEnvGet(name string) interface{} {
 		// Try to parse stuff as number, might break stuff
 		// Dont know if https://1231412.de gets converted to 1231412
 		// Allows ts to write k8x.$env["SCALE"] instead of having to parse it: Number(k8x.$env["SCALE"])
-		i, err := strconv.Atoi(pair[1])
+		i, err := strconv.Atoi(strings.TrimSpace(pair[1]))
 		if err != nil {
-			return pair[1]
+			return strings.TrimSpace(pair[1])
 		} else {
 			return i
 		}
@@ -107,7 +107,7 @@ func __jsEnvGetAsObject(name string) interface{} {
 		// K8X_INGRESS_CLASS_ANNOTATIONS_KEY_2=nginx.ingress.kubernetes.io/enable-cors
 		// K8X_INGRESS_CLASS_ANNOTATIONS_VALUE_2=true
 		key := os.Getenv(pair[0])
-		value := os.Getenv(strings.Replace(pair[0], "KEY", "VALUE", 1))
+		value := strings.TrimSpace(os.Getenv(strings.Replace(pair[0], "KEY", "VALUE", 1)))
 
 		// Try to parse stuff as number, might break stuff
 		// Dont know if https://1231412.de gets converted to 1231412
@@ -218,8 +218,20 @@ func Run(code string, path string) map[string]interface{} {
 				continue
 			}
 
-			comp := component.(map[string]interface{})
-			metadata := comp["metadata"].(map[string]interface{})
+			comp, _ := component.(map[string]interface{})
+
+			if comp == nil {
+				comp = make(map[string]interface{})
+			}
+
+			metadata, _ := comp["metadata"].(map[string]interface{})
+
+			if metadata == nil {
+				m := make(map[string]interface{})
+				comp["metadata"] = m
+				continue
+			}
+
 			metadata["namespace"] = name
 		}
 	}
