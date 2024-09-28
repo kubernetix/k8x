@@ -6,14 +6,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/kubernetix/k8x/v1/internal/k8s"
 	"github.com/kubernetix/k8x/v1/internal/ts"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
-	"log"
 	"os"
-	"os/exec"
 	"strings"
-	"time"
 )
 
 // You generally won't need this unless you're processing stuff with
@@ -129,18 +126,13 @@ func max(a, b int) int {
 	return b
 }
 
-var (
-	Interactive bool
-)
-
 func init() {
-	render.PersistentFlags().BoolVarP(&Interactive, "interactive", "i", false, "Interactively show rendered json/yaml")
-	rootCmd.AddCommand(render)
+	rootCmd.AddCommand(inspect)
 }
 
-var render = &cobra.Command{
-	Use:   "render",
-	Short: "Render a chart file as yaml or json",
+var inspect = &cobra.Command{
+	Use:   "inspect",
+	Short: "Interactively inspect a chart file",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			_ = cmd.Help()
@@ -152,103 +144,23 @@ var render = &cobra.Command{
 		code := ts.Load(path, Verbose)
 		export := ts.Run(code, path)
 
-		content := []string{""}
+		kubectlYaml := k8s.PatchAndTransform(export)
 
-		for _, component := range export["components"].([]interface{}) {
-			if component == nil {
-				continue
-			}
-			bts, _ := yaml.Marshal(component)
-			content = append(content, string(bts))
+		md := fmt.Sprintf("```yml%s```", kubectlYaml.Combined())
+
+		out, _ := glamour.Render(md, "dark")
+
+		p := tea.NewProgram(
+			model{content: out},
+			tea.WithAltScreen(),       // use the full size of the terminal in its "alternate screen buffer"
+			tea.WithMouseCellMotion(), // turn on mouse support so we can track the mouse wheel
+		)
+
+		if _, err := p.Run(); err != nil {
+			fmt.Println("could not run program:", err)
+			os.Exit(1)
 		}
 
-		namespace := export["namespace"]
-
-		if Interactive {
-			// Append auto generated namespace, Todo handle if namespace is undefined/null/""
-			if hasValidNamespace(namespace) {
-				nsyml, _ := yaml.Marshal(namespace)
-				content = append(content, string(nsyml))
-			}
-
-			md := fmt.Sprintf("```yml%s```", strings.Join(content, "---\n"))
-
-			out, _ := glamour.Render(md, "dark")
-
-			p := tea.NewProgram(
-				model{content: out},
-				tea.WithAltScreen(),       // use the full size of the terminal in its "alternate screen buffer"
-				tea.WithMouseCellMotion(), // turn on mouse support so we can track the mouse wheel
-			)
-
-			if _, err := p.Run(); err != nil {
-				fmt.Println("could not run program:", err)
-				os.Exit(1)
-			}
-
-			os.Exit(0)
-		} else {
-			// create and open a temporary file
-			f, err := os.CreateTemp("", "k8x-tmpfile-") // in Go version older than 1.17 you can use ioutil.TempFile
-			if err != nil {
-				log.Fatal(err)
-			}
-			// close and remove the temporary file at the end of the program
-			defer f.Close()
-			defer os.Remove(f.Name())
-
-			if hasValidNamespace(namespace) {
-				// Writing the namespace template to the file, apply it, wait 5 seconds
-				ns, err := yaml.Marshal(namespace)
-				if _, err := f.Write(ns); err != nil {
-					log.Fatal(err)
-				}
-
-				//fileOutput, _ := os.ReadFile(f.Name())
-				//fmt.Println(string(fileOutput))
-
-				grepCmd := exec.Command("kubectl", "apply", "-f", f.Name())
-
-				output, _ := grepCmd.Output()
-				fmt.Print(string(output))
-
-				if strings.Contains(string(output), "created") {
-					time.Sleep(1 * time.Second)
-				}
-
-				// Reset file
-				err = f.Truncate(0)
-				if err != nil {
-					return
-				}
-
-				_, err = f.Seek(0, 0)
-			}
-
-			// Write chart
-			if _, err := f.Write([]byte(strings.Join(content, "---\n"))); err != nil {
-				log.Fatal(err)
-			}
-
-			//fileOutput, _ = os.ReadFile(f.Name())
-			//fmt.Println(string(fileOutput))
-
-			grepCmd := exec.Command("kubectl", "apply", "-f", f.Name())
-
-			output, _ := grepCmd.Output()
-			fmt.Println(string(output))
-		}
+		os.Exit(0)
 	},
-}
-
-func hasValidNamespace(namespace interface{}) bool {
-	if namespace == nil {
-		return false
-	}
-
-	if namespace == "" {
-		return false
-	}
-
-	return true
 }

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/kubernetix/k8x/v1/internal/k8s"
 	"github.com/kubernetix/k8x/v1/internal/ts"
 	"github.com/spf13/cobra"
 	"os"
@@ -25,6 +26,8 @@ var install = &cobra.Command{
 		path := args[0]
 
 		code := ts.Load(path, Verbose)
-		_ = ts.Run(code, path)
+		export := ts.Run(code, path)
+		chart := k8s.PatchAndTransform(export)
+		k8s.ApplyChart(chart)
 	},
 }
