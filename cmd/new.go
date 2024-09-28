@@ -3,12 +3,10 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	spinner2 "github.com/kubernetix/k8x/v1/internal/spinner"
 	"github.com/spf13/cobra"
 	"os"
 	"path"
 	"text/template"
-	"time"
 )
 
 func init() {
@@ -89,15 +87,6 @@ var newCmd = &cobra.Command{
 			panic(err)
 		}
 
-		spinner := spinner2.NewSpinner()
-
-		for i := 0; i < 50; i++ {
-			time.Sleep(100 * time.Millisecond)
-			fmt.Printf("\033[2K")
-			fmt.Println()
-			fmt.Printf("\033[1A")
-			fmt.Printf("%s Initializing chart....", spinner.String())
-		}
-		fmt.Println("Success!")
+		fmt.Println("Initialized chart....")
 	},
 }
