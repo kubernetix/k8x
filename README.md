@@ -34,10 +34,9 @@ Deploy and manage reusable apps with typescript and javascript
 
 ```
 k8x install <file>
-k8x update <file>
 k8x inspect <file>
-k8x ls
-k8x rm
+k8x new <path>
+k8x version
 ```
 
 ## Goals
