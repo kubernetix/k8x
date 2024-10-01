@@ -80,7 +80,7 @@ func __jsEnvGet(name string) interface{} {
 		}
 	}
 
-	panic("No env variable found")
+	return nil
 }
 
 // Can return number or string
