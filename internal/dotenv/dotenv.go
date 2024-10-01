@@ -40,11 +40,6 @@ func Load() error {
 	lines := strings.Split(strings.TrimSpace(string(file)), "\n")
 
 	if len(lines) == 0 {
-		// Split by windows newlines
-		lines = strings.Split(string(file), "\r")
-	}
-
-	if len(lines) == 0 {
 		// The file is empty :/
 		return nil
 	}
