@@ -21,21 +21,19 @@ func Load() error {
 	cwd, err := os.Getwd()
 
 	if err != nil {
-		return fmt.Errorf("can't determine current working directory %w", err)
+		return fmt.Errorf("getting current working directory: %w", err)
 	}
 
 	_, err = os.Stat(path.Join(cwd, envToLoad))
 
 	if err != nil {
-		// If the file does not exists, we dont load it
-		fmt.Printf("Warning: Couldn't find %s", envToLoad)
 		return nil
 	}
 
 	file, err := os.ReadFile(envToLoad)
 
 	if err != nil {
-		return fmt.Errorf("can't read dot env file: %s %w", envToLoad, err)
+		return fmt.Errorf("reading dot env file: %s: %w", envToLoad, err)
 	}
 
 	// Split by newlines
@@ -75,7 +73,7 @@ func Load() error {
 		err := os.Setenv(key, value)
 
 		if err != nil {
-			return fmt.Errorf("could not set env var %s with value %s %w", key, value, err)
+			return fmt.Errorf("setting env var %s with value %s: %w", key, value, err)
 		}
 	}
 
