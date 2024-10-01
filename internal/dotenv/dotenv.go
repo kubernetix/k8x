@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Load() {
+func Load() error {
 	envToLoad := os.Getenv("K8X_ENV")
 
 	if envToLoad == "" {
@@ -21,8 +21,7 @@ func Load() {
 	cwd, err := os.Getwd()
 
 	if err != nil {
-		fmt.Printf("Warning: Can't determine current working directory")
-		return
+		return fmt.Errorf("can't determine current working directory %w", err)
 	}
 
 	_, err = os.Stat(path.Join(cwd, envToLoad))
@@ -30,10 +29,14 @@ func Load() {
 	if err != nil {
 		// If the file does not exists, we dont load it
 		fmt.Printf("Warning: Couldn't find %s", envToLoad)
-		return
+		return nil
 	}
 
 	file, err := os.ReadFile(envToLoad)
+
+	if err != nil {
+		return fmt.Errorf("can't read dot env file: %s %w", envToLoad, err)
+	}
 
 	// Split by newlines
 	lines := strings.Split(strings.TrimSpace(string(file)), "\n")
@@ -45,7 +48,7 @@ func Load() {
 
 	if len(lines) == 0 {
 		// The file is empty :/
-		return
+		return nil
 	}
 
 	for _, line := range lines {
@@ -72,9 +75,9 @@ func Load() {
 		err := os.Setenv(key, value)
 
 		if err != nil {
-			fmt.Printf("Warning, could not set env var %s with value %s", key, value)
-			continue
+			return fmt.Errorf("could not set env var %s with value %s %w", key, value, err)
 		}
 	}
 
+	return nil
 }

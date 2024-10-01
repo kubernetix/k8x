@@ -17,7 +17,7 @@ func TestLoad(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
-	Load()
+	_ = Load()
 
 	if os.Getenv("KEY") != "" {
 		t.Fatalf(`KEY is not empty! Loading env variables without K8X prefix`)

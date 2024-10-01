@@ -8,7 +8,11 @@ import (
 
 func init() {
 	runtime.LockOSThread()
-	dotenv.Load()
+	err := dotenv.Load()
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {
