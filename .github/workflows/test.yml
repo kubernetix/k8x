@@ -6,7 +6,7 @@ name: Execute tests
 on: push
 
 jobs:
-  build-linux:
+  run-all-tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
